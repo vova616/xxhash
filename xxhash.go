@@ -39,18 +39,16 @@ func (self *XXHash) Size() int {
 	return 4
 }
 
-// Sum32 returns xxhash32 checksum and free internal state.
 func (self *XXHash) feed(in []byte) uint32 {
-	p := in
-	l := len(in)
-	l2 := l
+	p := 0
+	bEnd := len(in)
 
-	self.total_len += uint64(l)
+	self.total_len += uint64(bEnd)
 
 	// fill in tmp buffer
-	if self.memsize+l < 16 {
+	if self.memsize+bEnd < 16 {
 		copy(self.memory[self.memsize:], in)
-		self.memsize += l
+		self.memsize += bEnd
 		return 0
 	}
 
@@ -62,8 +60,7 @@ func (self *XXHash) feed(in []byte) uint32 {
 			(uint32(self.memory[3]) << 24)
 
 		self.v1 += p32 * PRIME32_2
-		self.v1 = ((self.v1 << 13) | (self.v1 >> (32 - 13)))
-		self.v1 *= PRIME32_1
+		self.v1 = ((self.v1 << 13) | (self.v1 >> (32 - 13))) * PRIME32_1
 
 		p32 = uint32(self.memory[4]) |
 			(uint32(self.memory[5]) << 8) |
@@ -71,8 +68,7 @@ func (self *XXHash) feed(in []byte) uint32 {
 			(uint32(self.memory[7]) << 24)
 
 		self.v2 += p32 * PRIME32_2
-		self.v2 = ((self.v2 << 13) | (self.v2 >> (32 - 13)))
-		self.v2 *= PRIME32_1
+		self.v2 = ((self.v2 << 13) | (self.v2 >> (32 - 13))) * PRIME32_1
 
 		p32 = uint32(self.memory[8]) |
 			(uint32(self.memory[9]) << 8) |
@@ -80,8 +76,7 @@ func (self *XXHash) feed(in []byte) uint32 {
 			(uint32(self.memory[11]) << 24)
 
 		self.v3 += p32 * PRIME32_2
-		self.v3 = ((self.v3 << 13) | (self.v3 >> (32 - 13)))
-		self.v3 *= PRIME32_1
+		self.v3 = ((self.v3 << 13) | (self.v3 >> (32 - 13))) * PRIME32_1
 
 		p32 = uint32(self.memory[12]) |
 			(uint32(self.memory[13]) << 8) |
@@ -89,63 +84,55 @@ func (self *XXHash) feed(in []byte) uint32 {
 			(uint32(self.memory[15]) << 24)
 
 		self.v4 += p32 * PRIME32_2
-		self.v4 = ((self.v4 << 13) | (self.v4 >> (32 - 13)))
-		self.v4 *= PRIME32_1
+		self.v4 = ((self.v4 << 13) | (self.v4 >> (32 - 13))) * PRIME32_1
 
 		s := 16 - self.memsize
-		p = p[s:]
+		p += s
 		self.memsize = 0
-
-		l2 -= s
 	}
 
-	limit := l2 - 16
+	limit := bEnd - 16
 	v1, v2, v3, v4 := self.v1, self.v2, self.v3, self.v4
 
-	i := 0
-	for ; i <= limit; i += 16 {
-		var p32 uint32 = uint32(p[i]) |
-			(uint32(p[i+1]) << 8) |
-			(uint32(p[i+2]) << 16) |
-			(uint32(p[i+3]) << 24)
+	for ; p <= limit; p += 16 {
+		var p32 uint32 = uint32(in[p]) |
+			(uint32(in[p+1]) << 8) |
+			(uint32(in[p+2]) << 16) |
+			(uint32(in[p+3]) << 24)
 
 		v1 += p32 * PRIME32_2
-		v1 = ((v1 << 13) | (v1 >> (32 - 13)))
-		v1 *= PRIME32_1
+		v1 = ((v1 << 13) | (v1 >> (32 - 13))) * PRIME32_1
 
-		p32 = uint32(p[i+4]) |
-			(uint32(p[i+5]) << 8) |
-			(uint32(p[i+6]) << 16) |
-			(uint32(p[i+7]) << 24)
+		p32 = uint32(in[p+4]) |
+			(uint32(in[p+5]) << 8) |
+			(uint32(in[p+6]) << 16) |
+			(uint32(in[p+7]) << 24)
 
 		v2 += p32 * PRIME32_2
-		v2 = ((v2 << 13) | (v2 >> (32 - 13)))
-		v2 *= PRIME32_1
+		v2 = ((v2 << 13) | (v2 >> (32 - 13))) * PRIME32_1
 
-		p32 = uint32(p[i+8]) |
-			(uint32(p[i+9]) << 8) |
-			(uint32(p[i+10]) << 16) |
-			(uint32(p[i+11]) << 24)
+		p32 = uint32(in[p+8]) |
+			(uint32(in[p+9]) << 8) |
+			(uint32(in[p+10]) << 16) |
+			(uint32(in[p+11]) << 24)
 
 		v3 += p32 * PRIME32_2
-		v3 = ((v3 << 13) | (v3 >> (32 - 13)))
-		v3 *= PRIME32_1
+		v3 = ((v3 << 13) | (v3 >> (32 - 13))) * PRIME32_1
 
-		p32 = uint32(p[i+12]) |
-			(uint32(p[i+13]) << 8) |
-			(uint32(p[i+14]) << 16) |
-			(uint32(p[i+15]) << 24)
+		p32 = uint32(in[p+12]) |
+			(uint32(in[p+13]) << 8) |
+			(uint32(in[p+14]) << 16) |
+			(uint32(in[p+15]) << 24)
 
 		v4 += p32 * PRIME32_2
-		v4 = ((v4 << 13) | (v4 >> (32 - 13)))
-		v4 *= PRIME32_1
+		v4 = ((v4 << 13) | (v4 >> (32 - 13))) * PRIME32_1
 	}
 
-	l2 -= i
+	limit = bEnd - p
 
-	if l2 > 0 {
-		copy(self.memory[:], p[i:i+l2])
-		self.memsize = l2
+	if limit > 0 {
+		copy(self.memory[:], in[p:bEnd])
+		self.memsize = limit
 	}
 
 	self.v1 = v1
@@ -228,14 +215,15 @@ func (self *XXHash) Write(data []byte) (nn int, err error) {
 	return len(data), nil
 }
 
+// Checksum32Seed returns the xxhash32 checksum of data using a seed. Length of data MUST BE less than 2 Gigabytes.
 func Checksum32(data []byte) uint32 {
 	return Checksum32Seed(data, 0)
 }
 
+// Checksum32 returns the xxhash32 checksum of data. Length of data MUST BE less than 2 Gigabytes.
 func Checksum32Seed(data []byte, seed uint32) uint32 {
 	p := 0
-	l := len(data)
-	bEnd := l
+	bEnd := len(data)
 	h32 := uint32(0)
 
 	if bEnd >= 16 {
@@ -252,8 +240,7 @@ func Checksum32Seed(data []byte, seed uint32) uint32 {
 				(uint32(data[p+3]) << 24)
 
 			v1 += p32 * PRIME32_2
-			v1 = ((v1 << 13) | (v1 >> (32 - 13)))
-			v1 *= PRIME32_1
+			v1 = ((v1 << 13) | (v1 >> (32 - 13))) * PRIME32_1
 
 			p32 = uint32(data[p+4]) |
 				(uint32(data[p+5]) << 8) |
@@ -261,8 +248,7 @@ func Checksum32Seed(data []byte, seed uint32) uint32 {
 				(uint32(data[p+7]) << 24)
 
 			v2 += p32 * PRIME32_2
-			v2 = ((v2 << 13) | (v2 >> (32 - 13)))
-			v2 *= PRIME32_1
+			v2 = ((v2 << 13) | (v2 >> (32 - 13))) * PRIME32_1
 
 			p32 = uint32(data[p+8]) |
 				(uint32(data[p+9]) << 8) |
@@ -270,8 +256,7 @@ func Checksum32Seed(data []byte, seed uint32) uint32 {
 				(uint32(data[p+11]) << 24)
 
 			v3 += p32 * PRIME32_2
-			v3 = ((v3 << 13) | (v3 >> (32 - 13)))
-			v3 *= PRIME32_1
+			v3 = ((v3 << 13) | (v3 >> (32 - 13))) * PRIME32_1
 
 			p32 = uint32(data[p+12]) |
 				(uint32(data[p+13]) << 8) |
@@ -279,8 +264,7 @@ func Checksum32Seed(data []byte, seed uint32) uint32 {
 				(uint32(data[p+15]) << 24)
 
 			v4 += p32 * PRIME32_2
-			v4 = ((v4 << 13) | (v4 >> (32 - 13)))
-			v4 *= PRIME32_1
+			v4 = ((v4 << 13) | (v4 >> (32 - 13))) * PRIME32_1
 
 			p += 16
 
@@ -296,7 +280,7 @@ func Checksum32Seed(data []byte, seed uint32) uint32 {
 		h32 = seed + PRIME32_5
 	}
 
-	h32 += uint32(l)
+	h32 += uint32(bEnd)
 
 	for p <= bEnd-4 {
 		var p32 uint32 = uint32(data[p]) |
