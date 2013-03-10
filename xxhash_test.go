@@ -1,3 +1,4 @@
+//stollen from bitbucket.org/StephaneBunel/xxhash-go
 package xxhash
 
 import (
