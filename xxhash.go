@@ -201,7 +201,6 @@ func (self *XXHash) Reset() {
 	self.v4 = seed - PRIME32_1
 	self.total_len = 0
 	self.memsize = 0
-	self.memory = [16]byte{}
 }
 
 // Write adds more data to the running hash.
