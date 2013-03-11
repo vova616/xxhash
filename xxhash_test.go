@@ -2,7 +2,6 @@
 package xxhash
 
 import (
-	"bytes"
 	"encoding/binary"
 	"hash/adler32"
 	"hash/crc32"
@@ -163,9 +162,10 @@ func mmh3Hash32(key []byte) uint32 {
 	var c1, c2 uint32 = 0xcc9e2d51, 0x1b873593
 	nblocks := length / 4
 	var h, k uint32
-	buf := bytes.NewBuffer(key)
+	buf := key
 	for i := 0; i < nblocks; i++ {
-		binary.Read(buf, binary.LittleEndian, &k)
+		k = binary.LittleEndian.Uint32(buf)
+		buf = buf[4:]
 		k *= c1
 		k = (k << 15) | (k >> (32 - 15))
 		k *= c2

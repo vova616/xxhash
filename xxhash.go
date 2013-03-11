@@ -3,6 +3,7 @@ package xxhash
 import (
 	"errors"
 	"hash"
+	"unsafe"
 )
 
 const (
@@ -54,36 +55,16 @@ func (self *XXHash) feed(in []byte) uint32 {
 
 	if self.memsize > 0 {
 		copy(self.memory[self.memsize:], in[:16-self.memsize])
-		var p32 uint32 = uint32(self.memory[0]) |
-			(uint32(self.memory[1]) << 8) |
-			(uint32(self.memory[2]) << 16) |
-			(uint32(self.memory[3]) << 24)
-
-		self.v1 += p32 * PRIME32_2
+		self.v1 += *(*uint32)(unsafe.Pointer(&self.memory[0])) * PRIME32_2
 		self.v1 = ((self.v1 << 13) | (self.v1 >> (32 - 13))) * PRIME32_1
 
-		p32 = uint32(self.memory[4]) |
-			(uint32(self.memory[5]) << 8) |
-			(uint32(self.memory[6]) << 16) |
-			(uint32(self.memory[7]) << 24)
-
-		self.v2 += p32 * PRIME32_2
+		self.v2 += *(*uint32)(unsafe.Pointer(&self.memory[4])) * PRIME32_2
 		self.v2 = ((self.v2 << 13) | (self.v2 >> (32 - 13))) * PRIME32_1
 
-		p32 = uint32(self.memory[8]) |
-			(uint32(self.memory[9]) << 8) |
-			(uint32(self.memory[10]) << 16) |
-			(uint32(self.memory[11]) << 24)
-
-		self.v3 += p32 * PRIME32_2
+		self.v3 += *(*uint32)(unsafe.Pointer(&self.memory[8])) * PRIME32_2
 		self.v3 = ((self.v3 << 13) | (self.v3 >> (32 - 13))) * PRIME32_1
 
-		p32 = uint32(self.memory[12]) |
-			(uint32(self.memory[13]) << 8) |
-			(uint32(self.memory[14]) << 16) |
-			(uint32(self.memory[15]) << 24)
-
-		self.v4 += p32 * PRIME32_2
+		self.v4 += *(*uint32)(unsafe.Pointer(&self.memory[12])) * PRIME32_2
 		self.v4 = ((self.v4 << 13) | (self.v4 >> (32 - 13))) * PRIME32_1
 
 		s := 16 - self.memsize
@@ -95,36 +76,16 @@ func (self *XXHash) feed(in []byte) uint32 {
 	v1, v2, v3, v4 := self.v1, self.v2, self.v3, self.v4
 
 	for ; p <= limit; p += 16 {
-		var p32 uint32 = uint32(in[p]) |
-			(uint32(in[p+1]) << 8) |
-			(uint32(in[p+2]) << 16) |
-			(uint32(in[p+3]) << 24)
-
-		v1 += p32 * PRIME32_2
+		v1 += *(*uint32)(unsafe.Pointer(&in[p])) * PRIME32_2
 		v1 = ((v1 << 13) | (v1 >> (32 - 13))) * PRIME32_1
 
-		p32 = uint32(in[p+4]) |
-			(uint32(in[p+5]) << 8) |
-			(uint32(in[p+6]) << 16) |
-			(uint32(in[p+7]) << 24)
-
-		v2 += p32 * PRIME32_2
+		v2 += *(*uint32)(unsafe.Pointer(&in[p+4])) * PRIME32_2
 		v2 = ((v2 << 13) | (v2 >> (32 - 13))) * PRIME32_1
 
-		p32 = uint32(in[p+8]) |
-			(uint32(in[p+9]) << 8) |
-			(uint32(in[p+10]) << 16) |
-			(uint32(in[p+11]) << 24)
-
-		v3 += p32 * PRIME32_2
+		v3 += *(*uint32)(unsafe.Pointer(&in[p+8])) * PRIME32_2
 		v3 = ((v3 << 13) | (v3 >> (32 - 13))) * PRIME32_1
 
-		p32 = uint32(in[p+12]) |
-			(uint32(in[p+13]) << 8) |
-			(uint32(in[p+14]) << 16) |
-			(uint32(in[p+15]) << 24)
-
-		v4 += p32 * PRIME32_2
+		v4 += *(*uint32)(unsafe.Pointer(&in[p+12])) * PRIME32_2
 		v4 = ((v4 << 13) | (v4 >> (32 - 13))) * PRIME32_1
 	}
 
@@ -160,11 +121,7 @@ func (self *XXHash) Sum32() uint32 {
 	h32 += uint32(self.total_len)
 
 	for p <= bEnd-4 {
-		var p32 uint32 = uint32(self.memory[p]) |
-			(uint32(self.memory[p+1]) << 8) |
-			(uint32(self.memory[p+2]) << 16) |
-			(uint32(self.memory[p+3]) << 24)
-		h32 += p32 * PRIME32_3
+		h32 += *(*uint32)(unsafe.Pointer(&self.memory[p])) * PRIME32_3
 		h32 = ((h32 << 17) | (h32 >> (32 - 17))) * PRIME32_4
 		p += 4
 	}
@@ -233,40 +190,19 @@ func Checksum32Seed(data []byte, seed uint32) uint32 {
 		v3 := seed + 0
 		v4 := seed - PRIME32_1
 		for {
-			var p32 uint32 = uint32(data[p]) |
-				(uint32(data[p+1]) << 8) |
-				(uint32(data[p+2]) << 16) |
-				(uint32(data[p+3]) << 24)
-
-			v1 += p32 * PRIME32_2
+			v1 += *(*uint32)(unsafe.Pointer(&data[p])) * PRIME32_2
 			v1 = ((v1 << 13) | (v1 >> (32 - 13))) * PRIME32_1
 
-			p32 = uint32(data[p+4]) |
-				(uint32(data[p+5]) << 8) |
-				(uint32(data[p+6]) << 16) |
-				(uint32(data[p+7]) << 24)
-
-			v2 += p32 * PRIME32_2
+			v2 += *(*uint32)(unsafe.Pointer(&data[p+4])) * PRIME32_2
 			v2 = ((v2 << 13) | (v2 >> (32 - 13))) * PRIME32_1
 
-			p32 = uint32(data[p+8]) |
-				(uint32(data[p+9]) << 8) |
-				(uint32(data[p+10]) << 16) |
-				(uint32(data[p+11]) << 24)
-
-			v3 += p32 * PRIME32_2
+			v3 += *(*uint32)(unsafe.Pointer(&data[p+8])) * PRIME32_2
 			v3 = ((v3 << 13) | (v3 >> (32 - 13))) * PRIME32_1
 
-			p32 = uint32(data[p+12]) |
-				(uint32(data[p+13]) << 8) |
-				(uint32(data[p+14]) << 16) |
-				(uint32(data[p+15]) << 24)
-
-			v4 += p32 * PRIME32_2
+			v4 += *(*uint32)(unsafe.Pointer(&data[p+12])) * PRIME32_2
 			v4 = ((v4 << 13) | (v4 >> (32 - 13))) * PRIME32_1
 
 			p += 16
-
 			if p > limit {
 				break
 			}
@@ -282,11 +218,7 @@ func Checksum32Seed(data []byte, seed uint32) uint32 {
 	h32 += uint32(bEnd)
 
 	for p <= bEnd-4 {
-		var p32 uint32 = uint32(data[p]) |
-			(uint32(data[p+1]) << 8) |
-			(uint32(data[p+2]) << 16) |
-			(uint32(data[p+3]) << 24)
-		h32 += p32 * PRIME32_3
+		h32 += *(*uint32)(unsafe.Pointer(&data[p])) * PRIME32_3
 		h32 = ((h32 << 17) | (h32 >> (32 - 17))) * PRIME32_4
 		p += 4
 	}
