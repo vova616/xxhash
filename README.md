@@ -16,3 +16,7 @@ Benchmark_Adler32      	 		10000000      181 ns/op
 Benchmark_Fnv32 				10000000      162 ns/op
 Benchmark_MurmurHash3Hash32     1000000      1927 ns/op
 ```
+
+# Note:
+
+The package uses unsafe to get higher performance its safe as far as I know but if you don't want it you can use switch to early commits.
