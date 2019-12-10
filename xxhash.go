@@ -165,7 +165,7 @@ func (self *XXHash) Reset() {
 // Write adds more data to the running hash.
 // Length of data MUST BE less than 1 Gigabytes.
 func (self *XXHash) Write(data []byte) (nn int, err error) {
-	if len(data) == nil {
+	if len(data) == 0 {
 		return 0, errors.New("Data cannot be nil or empty.")
 	}
 	l := len(data)
@@ -183,7 +183,7 @@ func Checksum32(data []byte) uint32 {
 
 // Checksum32 returns the xxhash32 checksum of data. Length of data MUST BE less than 2 Gigabytes.
 func Checksum32Seed(data []byte, seed uint32) uint32 {
-	if len(data) == nil {
+	if len(data) == 0 {
 		panic("Data cannot be nil or empty.")
 	}
 	p := uintptr(unsafe.Pointer(&data[0]))
